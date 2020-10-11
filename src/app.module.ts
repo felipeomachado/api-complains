@@ -1,6 +1,8 @@
 import { Module } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
 import { CompaniesModule } from './companies/companies.module';
+import { ComplainsModule } from './complains/complains.module';
+import { LocalesModule } from './locales/locales.module';
 
 @Module({
   imports: [
@@ -9,6 +11,8 @@ import { CompaniesModule } from './companies/companies.module';
       { useNewUrlParser: true, useCreateIndex: true, useUnifiedTopology: true, useFindAndModify: false }
     ),
     CompaniesModule,
+    ComplainsModule,
+    LocalesModule,
     ],
   controllers: [],
   providers: [],

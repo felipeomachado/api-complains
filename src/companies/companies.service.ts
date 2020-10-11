@@ -28,7 +28,7 @@ export class CompaniesService {
   }
 
   async findCompanyByIdOrThrow(_id: string) : Promise<Company> {
-    const company = await this.companyModel.findOne({ _id });
+    const company = await this.companyModel.findById({ _id });
 
     if(!company) {
       throw new NotFoundException('Company not found');
@@ -36,7 +36,7 @@ export class CompaniesService {
     return company;
   }
 
-  async findAllCompanies() : Promise<Company[]> {
+  async findAllCompanies() : Promise<Array<Company>> {
     return await this.companyModel.find();
   }
 
@@ -44,7 +44,7 @@ export class CompaniesService {
     const companyById = await this.findCompanyByIdOrThrow(_id);
     const companyByName = await this.findCompanyByName(updateCompanyDto.name);
 
-    if(companyByName && (companyById._id.toString() != companyByName._id.toString())) {
+    if(companyByName && (companyByName._id.toString() != companyById._id.toString())) {
       throw new BadRequestException('This name is already being used by another company');
 
     }

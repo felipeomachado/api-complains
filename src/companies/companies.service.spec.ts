@@ -13,6 +13,7 @@ describe('CompaniesService', () => {
   let service: CompaniesService;
   const mockModel = {
     findOne: jest.fn(),
+    findById: jest.fn(),
     create: jest.fn(),
     save: jest.fn(),
     find: jest.fn(),
@@ -38,37 +39,28 @@ describe('CompaniesService', () => {
     mockModel.create.mockReset();
     mockModel.save.mockReset();
     mockModel.find.mockReset();
+    mockModel.findById.mockReset();
     mockModel.findByIdAndUpdate.mockReset();
+
 
   });
 
-  describe('createCompany', () => {
-    it('should create a company', async () => {
-
-      mockModel.create.mockReturnValue(validCompany);
-
-      const savedCompany = await service.createCompany(validCompany);
-      
-      expect(savedCompany).toMatchObject(validCompany);
-      expect(mockModel.create).toHaveBeenCalledTimes(1);
-      
-    });
-  })
-
-  describe('updateCompany', () => {
+  describe('When update Company', () => {
     it('should update a company', async () => {
 
       const companyUpdated = {name: 'Companhia B'};
 
+      mockModel.findById.mockReturnValue(validCompany);
       mockModel.findOne.mockReturnValue(validCompany);
       mockModel.findByIdAndUpdate.mockReturnValue({
         ...validCompany,
         ...companyUpdated
       });
 
-      await service.updateCompany(validCompany._id, {...validCompany, name: 'Companhia B'});
+      await service.updateCompany(validCompany._id, {...validCompany, name: companyUpdated.name});
 
-      expect(mockModel.findOne).toHaveBeenCalledTimes(2);
+      expect(mockModel.findById).toHaveBeenCalledTimes(1);
+      expect(mockModel.findOne).toHaveBeenCalledTimes(1);
       expect(mockModel.findByIdAndUpdate).toHaveBeenCalledTimes(1);
       
     });
@@ -76,46 +68,45 @@ describe('CompaniesService', () => {
     it('should return a exception when updating with an existing company name', async () => {
       const companyUpdated = {name: 'Companhia B'};
 
-      mockModel.findOne.mockReturnValue(validCompany);
-      mockModel.findByIdAndUpdate.mockReturnValue({
-        ...validCompany,
-        ...companyUpdated
-      });
+      mockModel.findById.mockReturnValue(validCompany);
+      mockModel.findByIdAndUpdate.mockReturnValue(null);
       
-      expect(service.updateCompany('123', {...validCompany, name: validCompany.name})).rejects.toBeInstanceOf(BadRequestException);
-      expect(mockModel.findOne).toHaveBeenCalledTimes(1);
-      expect(mockModel.findByIdAndUpdate).toHaveBeenCalledTimes(0);
+      await service.updateCompany('123', {...validCompany, name: companyUpdated.name}).catch(exception => {
+        expect(exception).toBeInstanceOf(BadRequestException);
+      })
+    
+      expect(mockModel.findById).toHaveBeenCalledTimes(1);
     });
   })
   
-  describe('findAll', () => {
+  describe('When search all Companies', () => {
     it('should be list all companies', async () => {
 
       mockModel.find.mockReturnValue([validCompany, validCompany]);
       
-      const ret = await service.findAllCompanies();
+      const companiesFound = await service.findAllCompanies();
 
-      expect(ret).toHaveLength(2);
+      expect(companiesFound).toHaveLength(2);
       expect(mockModel.find).toHaveBeenCalledTimes(1);
       
     });
   })
 
-  describe('findByIdOrThrow', () => {
+  describe('When search Company by Id', () => {
     it('should be find a existing company', async () => {
     
-      mockModel.findOne.mockReturnValue(validCompany);
+      mockModel.findById.mockReturnValue(validCompany);
 
       const companyFound = await service.findCompanyByIdOrThrow('1');
   
       expect(companyFound).toMatchObject({name: validCompany.name});
-      expect(mockModel.findOne).toHaveBeenCalledTimes(1);
+      expect(mockModel.findById).toHaveBeenCalledTimes(1);
     });
 
     it('should return a exception when does not to find a company', async () => {
-      mockModel.findOne.mockReturnValue(null);
+      mockModel.findById.mockReturnValue(null);
       expect(service.findCompanyByIdOrThrow('1111')).rejects.toBeInstanceOf(NotFoundException);
-      expect(mockModel.findOne).toHaveBeenCalledTimes(1);
+      expect(mockModel.findById).toHaveBeenCalledTimes(1);
     });
   })
 
